@@ -1,0 +1,34 @@
+---
+- name: Create user on a linux server
+  hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+    - user: mixy
+    - password: $6$JCSFrPyHfU.e0lj$G.JfAqtRZK0Wxb5d7URSuE35oz6m/jtxaz9AV.FnjSfmKsrG/gemY6xSfAvSBywA8O42qR4kU9keqUxc3lUEI0
+  tasks:
+      - name: Create a login user
+        user:
+          name: "{{ user }}"
+          password: "{{ password }}"
+          state: present
+
+      - name: Allow specific users to log in
+        ansible.builtin.lineinfile:
+          dest: /etc/ssh/sshd_config
+          regexp: '^AllowUsers'
+          line: 'AllowUsers {{ user }} root'
+          state: present
+
+      - name: Add {{ user }} to sudoers file
+        ansible.builtin.lineinfile:
+          path: /etc/sudoers
+          regexp: '^{{ user }}'
+          line: '{{ user }} ALL=(ALL) NOPASSWD: ALL'
+          validate: 'visudo -cf %s'
+
+      - name: Set authorized keys taken from url
+        ansible.posix.authorized_key:
+          user: "{{ user }}"
+          state: present
+          key: https://github.com/mixomatosys.keys

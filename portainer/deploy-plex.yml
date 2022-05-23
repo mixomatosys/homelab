@@ -1,0 +1,25 @@
+---
+version: "2.1"
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - PLEX_CLAIM= #optional
+    volumes:
+      - SabnzbdConfig:/config
+      - TV:/tv
+      - Movies:/movies
+      - Music:/music
+    restart: unless-stopped
+volumes:
+  TV:
+    external: true
+  Movies:
+    external: true
+  Music:
+    external: true
